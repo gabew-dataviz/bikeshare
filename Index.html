@@ -1,0 +1,164 @@
+
+<!doctype html>
+
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>My first leaflet map</title>
+  <h1>Boston - Hubway Bikeshare Exploration</h1>
+  <h3>MIT MAS.S70 Final Project</h3>
+</head>
+
+  <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
+  <script src="./leaflet.ajax.min.js"></script>
+  <script src="./jquery.min.js"></script>
+  <script src="./Data/stations_2017_pop.js"></script>
+  <script src="./Data/flowpairs_all_2017.js"></script>
+  <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="https://d3plus.org/js/d3.js"></script>
+  <link rel="stylesheet" href="style.css">
+
+<body>
+
+  <div id="mapContainer" style = "width: 1000px, height: 800px"></div>
+  <div id="viz-container"></div>
+  <div id="viz-background"></div>
+
+  <script src="./chart.js"></script>
+
+  <script>
+
+        function clearBox(elementID){
+            document.getElementById(elementID).innerHTML = "";
+        }
+
+        var station_id = 67;
+
+        var map = L.map('mapContainer').setView([42.3581,-71.093198], 14);
+        var layer = L.tileLayer('https://{s}.tile.openstreetmap.se/hydda/full/{z}/{x}/{y}.png', {
+          attribuation: '&copy; <a href="https://www.openstreetmap.org/copyright> OpenSteetMap<a> contributors, &copy; <a href="https://carto.com/ attribuations">CARTO</a>'
+        }).addTo(map);
+
+        function getColor(d) {
+            var color =  d > 5000 ? '#800026' :
+                   d > 4000  ? '#BD0026' :
+                   d > 3000  ? '#E31A1C' :
+                   d > 2000   ? '#FD8D3C' :
+                   d > 1000   ? '#FEB24C' :
+                   d > 0   ? '#FED976' :
+                              '#FFEDA0';
+           return color;
+        }
+
+
+        var legend = L.control({position: 'bottomright'});
+
+        legend.onAdd = function (map) {
+
+            var div = L.DomUtil.create('div', 'info legend'),
+                grades = [0, 1000, 2000, 3000, 4000, 5000],
+                labels = [];
+
+            // loop through our density intervals and generate a label with a colored square for each interval
+            for (var i = 0; i < grades.length; i++) {
+                div.innerHTML +=
+                    '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+                    grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+            }
+
+            return div;
+        };
+
+        legend.addTo(map);
+
+        var info = L.control();
+
+        info.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+            this.update();
+            return this._div;
+        };
+
+        // method that we will use to update the control based on feature properties passed
+        info.update = function (d) {
+            this._div.innerHTML = '<h4>Hubway Stations</h4>' +  (d ?
+                '<b>' + d.name + '</b><br />' + d.pop.toLocaleString() + ' people' + '</b><br />' + d.total.toLocaleString() + ' Total Trips'
+                : 'Hover over a station');
+        };
+        info.addTo(map);
+
+
+
+        var stationLayer;
+        stationLayer = L.geoJson(stationdata, {
+                		  pointToLayer: function (feature, latlng) {
+                		    	  //var popupOptions = { maxWidth: 300 };
+                		       // var popupContent = "Station: " + feature.properties.name + "</br>" + "Trip Starts:" + feature.properties.starts.toLocaleString()+ "</br>" + "Trip Starts:" + feature.properties.ends.toLocaleString();
+
+                		    function getOptions(properties) {
+                          return {
+                            color: "black",
+                            radius: properties.total/200,
+                            fill:1,
+                            fillColor: getColor(properties.pop),
+                            fillOpacity: 1,
+                            stroke: 1
+                          };
+                		    }
+                		    return L.circle(latlng, style = getOptions(feature.properties))
+                          //  .bindPopup(popupContent, popupOptions)
+                            .on('mouseover', function(){
+                              info.update(feature.properties);
+                              clearBox("viz-container");
+                              station_id = feature.properties.station_id;
+                              updateGraph(station_id);
+              //                this.openPopup();
+                              map.removeLayer(flowlayer);
+                              updateFlows(feature.properties.station_id);
+                            });
+                        }
+
+                		}).addTo(map);
+
+          var popup = L.popup()
+              .setLatLng([42.3581,-71.093198])
+              .setContent("MIT here")
+              .openOn(map);
+
+          var flowlayer;
+
+          function updateFlows(id){
+              flowlayer = L.geoJson(flowdata[id], {
+                style: function(geoJsonFeature) { return {
+                  weight: geoJsonFeature.properties.Flow / 200
+                  //color: flow_color(geoJsonFeature.properties.Flow)
+                }}
+              }).addTo(map);
+          }
+
+          //initialize map with MIT
+          updateGraph(station_id); updateFlows(station_id); info.update(stationdata[station_id]);
+
+          var overlayMaps = {
+              "Stations": stationLayer,
+              "Flows": flowlayer
+          };
+          L.control.layers(overlayMaps).addTo(map);
+
+      </script>
+
+<body>
+
+<div id = "credits">
+    <a href="https://www.thehubway.com/system-data" style = "left: 500px">Data Source: Hubway System Data</a>
+    <br>
+    <img class="img-circle" style = "left: 700px;" src="https://www.what-dog.net/Images/faces2/scroll0015.jpg">
+    <img class="img-circle" style = "left: 100px;" src="https://slappedham.com/wp-content/uploads/2015/03/dog-with-a-big-beard.jpg">
+    <br>
+    <p>Gabriel Wolofsky                    Yair Titlboim</p>
+
+</div>
+
+</html>

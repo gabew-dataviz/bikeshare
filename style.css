@@ -1,0 +1,90 @@
+#mapContainer {
+  position: absolute;
+  width: 100%;
+  height: 70%;
+  z-index: -1;
+}
+
+body {
+    background-color: lightblue;
+}
+
+.img-circle {
+    border-radius: 50%;
+    width: 250px;
+    height:250px;
+    position: relative;
+}
+
+
+#viz-container{
+    position: absolute;
+    margin: 0 auto;
+    width: 20%;
+    height: 20%;
+    z-index:1;
+}
+#viz-background{
+    position: absolute;
+    margin: 0 auto;
+    background-image: url("https://wpuploads.appadvice.com/wp-content/uploads/2015/11/white.jpg");
+    width: 500px;
+    height: 500px;
+    z-index:0;
+    opacity: 0.5;
+}
+#svg{
+  position: absolute;
+}
+.startsLine {
+  stroke: tomato;
+  stroke-width: 3;
+  fill: none;
+}
+.endsLine {
+  stroke: MediumSeaGreen;
+  stroke-width: 3;
+  fill: none;
+}
+.axis path,
+.axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+.startsArea { fill: tomato; opacity: 1; }
+.endsArea { fill: MediumSeaGreen; opacity: 1;}
+
+#credits{
+    width: 100%;
+    height: 300px;
+    top:800px;
+    position: absolute;
+}
+
+.legend {
+line-height: 18px;
+color: #555;
+}
+.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+}
+
+.info {
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+}
+.info h4 {
+    margin: 0 0 5px;
+    color: #777;
+}
